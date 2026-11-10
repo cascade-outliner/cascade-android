@@ -19,7 +19,14 @@ class OutlineStore(
     var ready by mutableStateOf(false)
         private set
 
+    private val listeners = ArrayList<() -> Unit>()
+
     val size: Int get() = nodes.size
+
+    fun addListener(listener: () -> Unit): () -> Unit {
+        listeners.add(listener)
+        return { listeners.remove(listener) }
+    }
 
     fun loaded(stored: List<Node>) {
         for (node in stored) {
@@ -28,8 +35,8 @@ class OutlineStore(
         }
         val fixed = breakCycles(nodes).map { put(it.copy(updatedAt = now())) }
         if (fixed.isNotEmpty()) persistence.write(fixed, emptyList())
-        changed()
         ready = true
+        changed()
     }
 
     fun get(id: String): Node? = nodes[id]
@@ -207,6 +214,7 @@ class OutlineStore(
     private fun changed() {
         tree = null
         version++
+        listeners.toList().forEach { it() }
     }
 
     private fun commit(put: List<Node>, delete: List<String> = emptyList()) {

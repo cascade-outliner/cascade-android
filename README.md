@@ -14,6 +14,7 @@ The outline lives on the device (SQLite) and works fully offline. There is no ac
 - Daily notes with a day switcher, week / month / year strip, and "due today, elsewhere"
 - Search across all nodes, or create a node from the query
 - Onboarding, light and dark theme
+- Home-screen widget with today's note and what's due today; tasks can be checked off from it
 - `cascade://node/<id>` links
 
 Not included: sync, sign-in, and the AI "Break into steps" split, which all need the server.
@@ -34,6 +35,7 @@ UI tests write screenshots to `app/build/screenshots/`.
 - `data/`: the outline store, ordering keys, daily notes, search and SQLite persistence. Order keys and daily node ids match the web app's.
 - `commands/`: the slash command registry.
 - `ui/`: Compose screens and components.
+- `widget/`: the Today home-screen widget.
 
 ## Licenses
 

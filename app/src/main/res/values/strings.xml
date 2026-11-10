@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Cascade</string>
+    <string name="widget_today_label">Today</string>
+    <string name="widget_today_description">Today\'s note and what\'s due today.</string>
+    <string name="widget_empty">Nothing for today yet.</string>
+    <string name="widget_add">Add to today</string>
+    <string name="widget_due_elsewhere">Due today, elsewhere</string>
+    <string name="widget_more">+%1$d more</string>
+    <string name="widget_mark_done">Mark as done</string>
+    <string name="widget_mark_not_done">Mark as not done</string>
 </resources>

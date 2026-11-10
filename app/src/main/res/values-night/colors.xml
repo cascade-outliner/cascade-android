@@ -1,3 +1,9 @@
 <resources>
     <color name="canvas">#192036</color>
+    <color name="widget_background">#192036</color>
+    <color name="widget_ink">#F0F0F0</color>
+    <color name="widget_muted">#A9ADBA</color>
+    <color name="widget_subtle">#1FF0F0F0</color>
+    <color name="widget_border">#33F0F0F0</color>
+    <color name="widget_on_primary">#192036</color>
 </resources>
