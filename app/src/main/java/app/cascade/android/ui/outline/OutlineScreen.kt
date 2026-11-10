@@ -20,12 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
@@ -47,15 +42,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.cascade.android.commands.SlashCommand
 import app.cascade.android.commands.SlashContext
+import app.cascade.android.commands.captureSlashCommands
 import app.cascade.android.data.Node
 import app.cascade.android.data.OutlineStore
 import app.cascade.android.data.Row
@@ -65,9 +55,13 @@ import app.cascade.android.data.dayTitle
 import app.cascade.android.data.isDayId
 import app.cascade.android.data.isoDay
 import app.cascade.android.data.relativeDay
-import app.cascade.android.ui.theme.Cascade
-import app.cascade.android.ui.theme.FontSize
-import app.cascade.android.ui.theme.Onest
+import app.cascade.design.CaptureBar
+import app.cascade.design.outliner.DragGhost
+import app.cascade.design.outliner.DropIndicator
+import app.cascade.design.outliner.OutlinerMetrics
+import app.cascade.design.outliner.ZoomTitle
+import app.cascade.design.theme.Cascade
+import app.cascade.design.theme.Space
 import java.time.LocalDate
 import kotlin.math.abs
 
@@ -138,8 +132,9 @@ fun OutlineScreen(
             if (found) {
                 CaptureBar(
                     onSubmit = capture,
+                    slashItems = captureSlashCommands,
                     focusRequester = captureFocus,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 16.dp, vertical = 12.dp),
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = Space.x4, vertical = Space.x3),
                 )
             }
         }
@@ -177,7 +172,7 @@ private fun OutlinePage(
     val today = LocalDate.now()
     val zoomed = zoomedNode(store, zoomedId)
     if (zoomedId != null && zoomed == null) {
-        NodeNotFound(onBack = { onZoomTo(null) }, Modifier.padding(top = 32.dp))
+        NodeNotFound(onBack = { onZoomTo(null) }, Modifier.padding(top = Space.x8))
         return
     }
 
@@ -214,7 +209,7 @@ private fun OutlinePage(
                 overId = it.key as String,
                 before = y < it.offset + it.size / 2f,
                 activeDepth = active.depth,
-                indentSteps = (position.x - drag.start.x) / with(density) { OutlineMetrics.Indent.toPx() },
+                indentSteps = (position.x - drag.start.x) / with(density) { OutlinerMetrics.Indent.toPx() },
             )
         }
     }
@@ -243,8 +238,8 @@ private fun OutlinePage(
         val item = info.visibleItemsInfo.firstOrNull { y >= it.offset && y < it.offset + it.size } ?: return null
         val row = currentRows.firstOrNull { it.node.id == item.key } ?: return null
         val (from, to) = with(density) {
-            val start = OutlineMetrics.bulletStart(row.depth).toPx()
-            (start - 4.dp.toPx()) to (start + OutlineMetrics.Bullet.toPx() + 4.dp.toPx())
+            val start = OutlinerMetrics.bulletStart(row.depth).toPx()
+            (start - 4.dp.toPx()) to (start + OutlinerMetrics.Bullet.toPx() + 4.dp.toPx())
         }
         return row.takeIf { position.x in from..to }
     }
@@ -313,14 +308,21 @@ private fun OutlinePage(
             state = listState,
             modifier = Modifier.fillMaxSize().testTag("outline"),
             contentPadding = PaddingValues(
-                start = OutlineMetrics.ListPadding,
-                end = OutlineMetrics.ListPadding,
-                top = 12.dp,
+                start = OutlinerMetrics.ListPadding,
+                end = OutlinerMetrics.ListPadding,
+                top = Space.x3,
                 bottom = 112.dp,
             ),
         ) {
             if (zoomed != null) {
-                item(key = HEADER_KEY) { ZoomTitle(store, zoomed, today) }
+                item(key = HEADER_KEY) {
+                    val locked = store.isLocked(zoomed.id)
+                    ZoomTitle(
+                        text = if (locked) relativeDay(zoomed.id, today) ?: zoomed.text else zoomed.text,
+                        readOnly = locked,
+                        onTextChange = { store.setText(zoomed.id, it) },
+                    )
+                }
             }
             if (allRows.isEmpty()) {
                 item(key = EMPTY_KEY) { OutlineEmpty(zoomed = zoomed != null, onAddStep = onAddStep) }
@@ -367,39 +369,5 @@ private fun OutlinePage(
                 depth = drag.projection?.depth ?: activeRow.depth,
             )
         }
-    }
-}
-
-@Composable
-private fun ZoomTitle(store: OutlineStore, node: Node, today: LocalDate) {
-    val colors = Cascade.colors
-    val style = TextStyle(
-        fontFamily = Onest,
-        fontSize = FontSize.s800,
-        lineHeight = 34.sp,
-        fontWeight = FontWeight.SemiBold,
-        letterSpacing = (-0.4).sp,
-        color = colors.ink,
-    )
-    val modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 20.dp)
-    if (store.isLocked(node.id)) {
-        Text(relativeDay(node.id, today) ?: node.text, modifier.testTag("zoom-title"), style = style)
-        return
-    }
-    var value by remember(node.id) { mutableStateOf(TextFieldValue(node.text)) }
-    val shown = if (value.text == node.text) value else TextFieldValue(node.text, TextRange(node.text.length))
-    Box(modifier) {
-        if (shown.text.isEmpty()) Text("Untitled", style = style, color = colors.placeholder)
-        BasicTextField(
-            value = shown,
-            onValueChange = {
-                value = it
-                store.setText(node.id, it.text)
-            },
-            modifier = Modifier.fillMaxWidth().testTag("zoom-title"),
-            textStyle = style,
-            cursorBrush = SolidColor(colors.info),
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-        )
     }
 }

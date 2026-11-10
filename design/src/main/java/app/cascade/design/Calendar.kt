@@ -1,4 +1,4 @@
-package app.cascade.android.ui.components
+package app.cascade.design
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,9 +27,10 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import app.cascade.android.R
-import app.cascade.android.ui.theme.Cascade
-import app.cascade.android.ui.theme.FontSize
+import app.cascade.design.theme.Cascade
+import app.cascade.design.theme.FontSize
+import app.cascade.design.theme.Radius
+import app.cascade.design.theme.Space
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -59,17 +58,17 @@ fun Calendar(
     val lead = (month.atDay(1).dayOfWeek.value - firstDay.value + 7) % 7
     val weeks = (lead + month.lengthOfMonth() + 6) / 7
 
-    Column(modifier.width(CELL * 7), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Row(Modifier.padding(bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+    Column(modifier.width(CELL * 7), verticalArrangement = Arrangement.spacedBy(Space.x0_5)) {
+        Row(Modifier.padding(bottom = Space.x1_5), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 month.format(MONTH_TITLE),
-                Modifier.padding(start = 8.dp),
+                Modifier.padding(start = Space.x2),
                 fontSize = FontSize.s400,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.weight(1f))
-            SquareIconButton(R.drawable.ic_caret_left, "Previous month", { month = month.minusMonths(1) }, iconSize = 14.dp)
-            SquareIconButton(R.drawable.ic_caret_right, "Next month", { month = month.plusMonths(1) }, iconSize = 14.dp)
+            CascadeIconButton(R.drawable.ic_caret_left, "Previous month", { month = month.minusMonths(1) }, iconSize = 14.dp)
+            CascadeIconButton(R.drawable.ic_caret_right, "Next month", { month = month.plusMonths(1) }, iconSize = 14.dp)
         }
         Row {
             for (weekday in weekdays) {
@@ -97,12 +96,12 @@ fun Calendar(
                     Box(
                         Modifier
                             .size(CELL)
-                            .padding(2.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .padding(Space.x0_5)
+                            .clip(Radius.md)
                             .background(if (isSelected) colors.primary else Color.Transparent)
                             .then(
                                 if (date == today && !isSelected) {
-                                    Modifier.border(1.dp, colors.borderStrong, RoundedCornerShape(12.dp))
+                                    Modifier.border(1.dp, colors.borderStrong, Radius.md)
                                 } else {
                                     Modifier
                                 },
@@ -121,7 +120,7 @@ fun Calendar(
                                     .align(Alignment.BottomCenter)
                                     .padding(bottom = 3.dp)
                                     .size(4.dp)
-                                    .background(content, CircleShape),
+                                    .background(content, Radius.full),
                             )
                         }
                     }

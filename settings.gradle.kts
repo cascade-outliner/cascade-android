@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "cascade-android"
 include(":app")
+include(":design")

@@ -1,7 +1,8 @@
 package app.cascade.android.commands
 
 import androidx.annotation.DrawableRes
-import app.cascade.android.R
+import app.cascade.design.R
+import app.cascade.design.SlashMenuItem
 import app.cascade.android.data.Node
 import app.cascade.android.data.OutlineStore
 import app.cascade.android.data.Task
@@ -18,16 +19,16 @@ class SlashContext(
 )
 
 class SlashCommand(
-    val id: String,
-    val group: String,
-    val label: String,
-    val keywords: List<String> = emptyList(),
-    @param:DrawableRes val icon: Int,
-    val danger: Boolean = false,
+    override val id: String,
+    override val group: String,
+    override val label: String,
+    override val keywords: List<String> = emptyList(),
+    @param:DrawableRes override val icon: Int,
+    override val danger: Boolean = false,
     val capture: Boolean = false,
     val available: (SlashContext) -> Boolean = { true },
     val run: (SlashContext) -> Unit,
-)
+) : SlashMenuItem
 
 private const val CONVERT = "Convert"
 private const val DUE = "Due date"
@@ -174,48 +175,3 @@ val slashCommands: List<SlashCommand> = listOf(
 val captureSlashCommands: List<SlashCommand> = slashCommands.filter { it.capture }
 
 fun nodeLink(id: String): String = "cascade://node/$id"
-
-private fun rankOf(command: SlashCommand, query: String): Int? {
-    val label = command.label.lowercase()
-    if (label.startsWith(query)) return 0
-    val words = label.split(Regex("""\s+""")) + command.keywords
-    return if (words.any { it.lowercase().startsWith(query) }) 1 else null
-}
-
-fun filterSlashCommands(commands: List<SlashCommand>, query: String): List<SlashCommand> {
-    val needle = query.trim().lowercase()
-    if (needle.isEmpty()) return commands
-    val ranked = commands.mapIndexedNotNull { index, command ->
-        rankOf(command, needle)?.let { Triple(command, it, index) }
-    }
-    val groupRank = LinkedHashMap<String, Int>()
-    for ((command, rank) in ranked) {
-        groupRank[command.group] = minOf(rank, groupRank[command.group] ?: Int.MAX_VALUE)
-    }
-    val groupOrder = groupRank.keys.toList()
-    return ranked.sortedWith(
-        compareBy<Triple<SlashCommand, Int, Int>> { groupRank.getValue(it.first.group) }
-            .thenBy { groupOrder.indexOf(it.first.group) }
-            .thenBy { it.second }
-            .thenBy { it.third },
-    ).map { it.first }
-}
-
-fun groupSlashCommands(commands: List<SlashCommand>): List<Pair<String, List<SlashCommand>>> {
-    val groups = ArrayList<Pair<String, MutableList<SlashCommand>>>()
-    for (command in commands) {
-        val last = groups.lastOrNull()
-        if (last?.first == command.group) last.second.add(command) else groups.add(command.group to mutableListOf(command))
-    }
-    return groups
-}
-
-data class SlashTrigger(val query: String, val index: Int)
-
-private val TRIGGER = Regex("""(?:^|\s)/([^\s/]*)$""")
-
-fun matchSlashTrigger(text: String): SlashTrigger? {
-    val match = TRIGGER.find(text) ?: return null
-    val query = match.groupValues[1]
-    return SlashTrigger(query, match.range.last + 1 - query.length - 1)
-}

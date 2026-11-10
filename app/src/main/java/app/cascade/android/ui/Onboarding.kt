@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -45,17 +44,18 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.cascade.android.R
-import app.cascade.android.ui.components.ButtonVariant
-import app.cascade.android.ui.components.CascadeButton
-import app.cascade.android.ui.components.CascadeIcon
-import app.cascade.android.ui.components.LogoMark
-import app.cascade.android.ui.theme.Cascade
-import app.cascade.android.ui.theme.FontSize
+import app.cascade.design.ButtonVariant
+import app.cascade.design.CascadeButton
+import app.cascade.design.Kbd
+import app.cascade.design.LogoMark
+import app.cascade.design.Stepper
+import app.cascade.design.theme.Cascade
+import app.cascade.design.theme.FontSize
+import app.cascade.design.theme.Radius
+import app.cascade.design.theme.Space
 
 private class Template(
     val id: String,
@@ -107,14 +107,14 @@ fun Onboarding(onDone: () -> Unit, modifier: Modifier = Modifier) {
             .fillMaxSize()
             .background(colors.canvas)
             .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(24.dp)
+            .padding(Space.x6)
             .testTag("onboarding"),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(Space.x6),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.x3_5), verticalAlignment = Alignment.CenterVertically) {
             LogoMark(size = 24.dp)
             Spacer(Modifier.weight(1f))
-            Stepper(step)
+            Stepper(STEPS, step, Modifier.testTag("onboarding-stepper"))
         }
         AnimatedContent(
             targetState = step,
@@ -128,19 +128,19 @@ fun Onboarding(onDone: () -> Unit, modifier: Modifier = Modifier) {
         ) { current ->
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
+                verticalArrangement = Arrangement.spacedBy(Space.x6),
             ) {
                 when (current) {
                     0 -> {
                         Heading("Everything is a line", "Cascade is an outliner. Lines nest inside lines, as deep as you like.")
                         Column(
-                            Modifier.fillMaxWidth().background(colors.white, RoundedCornerShape(20.dp)).padding(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            Modifier.fillMaxWidth().background(colors.white, Radius.lg).padding(Space.x2),
+                            verticalArrangement = Arrangement.spacedBy(Space.x1),
                         ) {
                             for ((key, text) in BASICS) {
                                 Row(
-                                    Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    Modifier.padding(horizontal = Space.x2_5, vertical = Space.x2),
+                                    horizontalArrangement = Arrangement.spacedBy(Space.x3),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Box(Modifier.width(64.dp), contentAlignment = Alignment.CenterEnd) { Kbd(key) }
@@ -151,7 +151,7 @@ fun Onboarding(onDone: () -> Unit, modifier: Modifier = Modifier) {
                     }
                     1 -> {
                         Heading("How do you want to start?", "You can change everything later. Templates are just nodes.")
-                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(Space.x3_5)) {
                             for (each in TEMPLATES) {
                                 TemplateCard(each, checked = template == each.id) { template = each.id }
                             }
@@ -160,8 +160,8 @@ fun Onboarding(onDone: () -> Unit, modifier: Modifier = Modifier) {
                     else -> {
                         Heading("Still in development", "Cascade is early. Expect rough edges.")
                         Column(
-                            Modifier.fillMaxWidth().background(colors.white, RoundedCornerShape(20.dp)).padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            Modifier.fillMaxWidth().background(colors.white, Radius.lg).padding(Space.x4),
+                            verticalArrangement = Arrangement.spacedBy(Space.x2_5),
                         ) {
                             Text(
                                 "Your outline is saved on this device: every edit lands here before anything else.",
@@ -185,7 +185,7 @@ fun Onboarding(onDone: () -> Unit, modifier: Modifier = Modifier) {
                 }
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.x2_5), verticalAlignment = Alignment.CenterVertically) {
             Spacer(Modifier.weight(1f))
             if (step > 0) {
                 CascadeButton({ step-- }, Modifier.testTag("onboarding-back")) { Text("Back") }
@@ -203,67 +203,16 @@ fun Onboarding(onDone: () -> Unit, modifier: Modifier = Modifier) {
 
 @Composable
 private fun Heading(title: String, description: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Space.x1_5)) {
         Text(title, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.SemiBold, letterSpacing = (-0.6).sp)
         Text(description, color = Cascade.colors.muted, fontSize = FontSize.s400, lineHeight = 20.sp)
     }
 }
 
 @Composable
-private fun Kbd(text: String) {
-    val colors = Cascade.colors
-    Text(
-        text,
-        Modifier
-            .background(colors.canvas, RoundedCornerShape(7.dp))
-            .border(1.dp, colors.border, RoundedCornerShape(7.dp))
-            .padding(horizontal = 7.dp, vertical = 3.dp),
-        color = colors.muted,
-        fontFamily = FontFamily.Monospace,
-        fontSize = FontSize.s200,
-    )
-}
-
-@Composable
-private fun Stepper(current: Int) {
-    val colors = Cascade.colors
-    Row(
-        Modifier.testTag("onboarding-stepper"),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        STEPS.forEachIndexed { index, label ->
-            if (index > 0) Box(Modifier.size(16.dp, 1.dp).background(colors.border))
-            val reached = index <= current
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(22.dp)
-                        .background(if (reached) colors.primary else Color.Transparent, CircleShape)
-                        .border(1.dp, if (reached) colors.primary else colors.border, CircleShape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (index < current) {
-                        CascadeIcon(R.drawable.ic_check_bold, size = 11.dp, tint = colors.onPrimary)
-                    } else {
-                        Text(
-                            (index + 1).toString(),
-                            color = if (reached) colors.onPrimary else colors.muted,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = FontSize.s200,
-                        )
-                    }
-                }
-                if (index == current) Text(label, fontSize = FontSize.s300, fontWeight = FontWeight.Medium)
-            }
-        }
-    }
-}
-
-@Composable
 private fun TemplateCard(template: Template, checked: Boolean, onPick: () -> Unit) {
     val colors = Cascade.colors
-    val shape = RoundedCornerShape(20.dp)
+    val shape = Radius.lg
     Row(
         Modifier
             .fillMaxWidth()
@@ -273,32 +222,32 @@ private fun TemplateCard(template: Template, checked: Boolean, onPick: () -> Uni
             .border(1.5.dp, if (checked) colors.borderStrong else Color.Transparent, shape)
             .clickable(enabled = template.enabled, role = Role.RadioButton, onClick = onPick)
             .semantics { selected = checked }
-            .padding(14.dp)
+            .padding(Space.x3_5)
             .testTag("onboarding-template-${template.id}"),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(Space.x3_5),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(
-            Modifier.size(112.dp, 84.dp).background(colors.canvas, RoundedCornerShape(9.dp)).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            Modifier.size(112.dp, 84.dp).background(colors.canvas, RoundedCornerShape(9.dp)).padding(Space.x3),
+            verticalArrangement = Arrangement.spacedBy(Space.x1_5),
         ) {
             for ((depth, task, width) in template.preview) {
                 Row(
-                    Modifier.padding(start = 10.dp * depth),
+                    Modifier.padding(start = Space.x2_5 * depth),
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(
                         Modifier.size(6.dp).then(
-                            if (task) Modifier.border(1.dp, colors.muted, CircleShape) else Modifier.background(colors.muted, CircleShape),
+                            if (task) Modifier.border(1.dp, colors.muted, Radius.full) else Modifier.background(colors.muted, Radius.full),
                         ),
                     )
                     Box(Modifier.fillMaxWidth(width).height(5.dp).background(colors.border, RoundedCornerShape(3.dp)))
                 }
             }
         }
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Space.x1)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.x2), verticalAlignment = Alignment.CenterVertically) {
                 Text(template.title, fontWeight = FontWeight.SemiBold)
                 if (!template.enabled) Text("Coming soon", color = colors.muted, fontSize = FontSize.s200)
             }
