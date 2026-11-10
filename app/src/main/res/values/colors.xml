@@ -1,0 +1,11 @@
+<resources>
+    <color name="canvas">#F0F0F0</color>
+    <color name="navy">#192036</color>
+    <color name="snow">#F0F0F0</color>
+    <color name="widget_background">#F0F0F0</color>
+    <color name="widget_ink">#192036</color>
+    <color name="widget_muted">#5B6072</color>
+    <color name="widget_subtle">#14192036</color>
+    <color name="widget_border">#33192036</color>
+    <color name="widget_on_primary">#F0F0F0</color>
+</resources>
