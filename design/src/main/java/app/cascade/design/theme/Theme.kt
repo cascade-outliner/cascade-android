@@ -1,4 +1,4 @@
-package app.cascade.android.ui.theme
+package app.cascade.design.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import app.cascade.android.R
+import app.cascade.design.R
 
 @Immutable
 data class CascadeColors(

@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import app.cascade.android.ui.CascadeApp
-import app.cascade.android.ui.theme.CascadeTheme
+import app.cascade.design.theme.CascadeTheme
 
 class MainActivity : ComponentActivity() {
     private var deepLink by mutableStateOf<String?>(null)

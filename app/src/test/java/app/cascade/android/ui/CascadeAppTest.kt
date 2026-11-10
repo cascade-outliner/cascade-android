@@ -26,7 +26,7 @@ import app.cascade.android.data.Settings
 import app.cascade.android.data.Task
 import app.cascade.android.data.dayId
 import app.cascade.android.data.isoDay
-import app.cascade.android.ui.theme.CascadeTheme
+import app.cascade.design.theme.CascadeTheme
 import com.github.takahirom.roborazzi.captureRoboImage
 import java.time.LocalDate
 import org.junit.Assert.assertEquals

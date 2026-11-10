@@ -1,11 +1,10 @@
-package app.cascade.android.ui.components
+package app.cascade.design
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -19,7 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
-import app.cascade.android.ui.theme.Cascade
+import app.cascade.design.theme.Cascade
+import app.cascade.design.theme.Elevation
+import app.cascade.design.theme.Radius
 
 private class AnchoredPositionProvider(
     private val top: Int,
@@ -70,11 +71,11 @@ fun AnchoredPopup(
     ) {
         Surface(
             modifier = modifier,
-            shape = RoundedCornerShape(20.dp),
+            shape = Radius.lg,
             color = Cascade.colors.white,
             contentColor = Cascade.colors.ink,
             border = BorderStroke(1.dp, Cascade.colors.border),
-            shadowElevation = 12.dp,
+            shadowElevation = Elevation.popup,
             content = content,
         )
     }

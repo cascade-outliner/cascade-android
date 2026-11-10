@@ -30,7 +30,7 @@ import app.cascade.android.data.OutlineStore
 import app.cascade.android.data.Settings
 import app.cascade.android.data.isDayId
 import app.cascade.android.ui.outline.OutlineScreen
-import app.cascade.android.ui.theme.Cascade
+import app.cascade.design.theme.Cascade
 
 class Navigator(initial: List<String> = emptyList()) {
     val stack = mutableStateListOf<String>().apply { addAll(initial) }

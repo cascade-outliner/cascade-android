@@ -1,4 +1,4 @@
-package app.cascade.android.ui.outline
+package app.cascade.design
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,28 +52,25 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.cascade.android.R
-import app.cascade.android.commands.SlashCommand
-import app.cascade.android.commands.captureSlashCommands
-import app.cascade.android.commands.filterSlashCommands
-import app.cascade.android.commands.matchSlashTrigger
-import app.cascade.android.ui.components.CascadeIcon
-import app.cascade.android.ui.components.SquareIconButton
-import app.cascade.android.ui.theme.Cascade
-import app.cascade.android.ui.theme.FontSize
-import app.cascade.android.ui.theme.Onest
+import app.cascade.design.theme.Cascade
+import app.cascade.design.theme.Elevation
+import app.cascade.design.theme.FontSize
+import app.cascade.design.theme.Onest
+import app.cascade.design.theme.Radius
+import app.cascade.design.theme.Space
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CaptureBar(
-    onSubmit: (text: String, picked: List<SlashCommand>) -> Unit,
+fun <T : SlashMenuItem> CaptureBar(
+    onSubmit: (text: String, picked: List<T>) -> Unit,
     focusRequester: FocusRequester,
+    slashItems: List<T> = emptyList(),
     modifier: Modifier = Modifier,
     placeholder: String = "Capture a thought…",
 ) {
     val colors = Cascade.colors
     var value by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
-    val picked = remember { mutableStateListOf<SlashCommand>() }
+    val picked = remember { mutableStateListOf<T>() }
     var focused by remember { mutableStateOf(false) }
     var plusOpen by remember { mutableStateOf(false) }
     var dismissed by remember { mutableStateOf<Int?>(null) }
@@ -88,12 +84,12 @@ fun CaptureBar(
     }
     LaunchedEffect(trigger?.index) { if (trigger?.index != dismissed) dismissed = null }
     val offered = if (trigger != null && trigger.index != dismissed) {
-        filterSlashCommands(captureSlashCommands, trigger.query)
+        filterSlashMenuItems(slashItems, trigger.query)
     } else {
         emptyList()
     }
 
-    fun pick(command: SlashCommand) {
+    fun pick(command: T) {
         if (command !in picked) picked.add(command)
     }
 
@@ -108,25 +104,25 @@ fun CaptureBar(
 
     Surface(
         modifier = modifier.fillMaxWidth().testTag("capture-bar"),
-        shape = RoundedCornerShape(24.dp),
+        shape = Radius.xl,
         color = colors.white,
-        shadowElevation = 10.dp,
+        shadowElevation = Elevation.float,
     ) {
-        Column(Modifier.padding(start = 12.dp, end = 12.dp, top = 10.dp, bottom = 10.dp)) {
+        Column(Modifier.padding(start = Space.x3, end = Space.x3, top = Space.x2_5, bottom = Space.x2_5)) {
             if (picked.isNotEmpty()) {
                 FlowRow(
-                    Modifier.padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    Modifier.padding(bottom = Space.x2),
+                    horizontalArrangement = Arrangement.spacedBy(Space.x1_5),
+                    verticalArrangement = Arrangement.spacedBy(Space.x1_5),
                 ) {
                     for (command in picked) {
                         Row(
                             Modifier
                                 .height(28.dp)
-                                .background(colors.primaryMuted, RoundedCornerShape(12.dp))
-                                .padding(start = 8.dp, end = 2.dp)
+                                .background(colors.primaryMuted, Radius.md)
+                                .padding(start = Space.x2, end = Space.x0_5)
                                 .testTag("capture-bar-chip"),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(Space.x1),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             CascadeIcon(command.icon, size = 13.dp, tint = colors.primary)
@@ -139,7 +135,7 @@ fun CaptureBar(
                             Box(
                                 Modifier
                                     .size(24.dp)
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(Radius.sm)
                                     .clickable(role = Role.Button) { picked.remove(command) }
                                     .semantics { contentDescription = "Remove ${command.label}" },
                                 contentAlignment = Alignment.Center,
@@ -150,9 +146,9 @@ fun CaptureBar(
                     }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Bottom) {
-                Box {
-                    SquareIconButton(
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.x2_5), verticalAlignment = Alignment.Bottom) {
+                if (slashItems.isNotEmpty()) Box {
+                    CascadeIconButton(
                         R.drawable.ic_plus_bold,
                         "Insert command",
                         { plusOpen = !plusOpen },
@@ -162,7 +158,7 @@ fun CaptureBar(
                     )
                     if (plusOpen) {
                         SlashMenu(
-                            commands = captureSlashCommands,
+                            items = slashItems,
                             onDismiss = { plusOpen = false },
                             onPick = {
                                 pick(it)
@@ -172,7 +168,7 @@ fun CaptureBar(
                         )
                     } else if (offered.isNotEmpty() && trigger != null) {
                         SlashMenu(
-                            commands = offered,
+                            items = offered,
                             onDismiss = { dismissed = trigger.index },
                             onPick = {
                                 pick(it)
@@ -183,7 +179,7 @@ fun CaptureBar(
                     }
                 }
                 val textStyle = TextStyle(fontFamily = Onest, fontSize = FontSize.s600, lineHeight = 24.sp, color = colors.ink)
-                Box(Modifier.weight(1f).heightIn(min = 36.dp, max = 160.dp).padding(vertical = 6.dp)) {
+                Box(Modifier.weight(1f).heightIn(min = 36.dp, max = 160.dp).padding(vertical = Space.x1_5)) {
                     if (value.text.isEmpty()) {
                         Text(placeholder, style = textStyle, color = colors.placeholder, maxLines = 1)
                     }
@@ -219,7 +215,7 @@ fun CaptureBar(
                         keyboardActions = KeyboardActions(onDone = { submit() }),
                     )
                 }
-                SquareIconButton(
+                CascadeIconButton(
                     R.drawable.ic_arrow_up_bold,
                     "Add",
                     submit,

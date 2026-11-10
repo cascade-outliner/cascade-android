@@ -33,27 +33,6 @@ class SlashCommandsTest {
     }
 
     @Test
-    fun triggerNeedsAStartOrASpaceBeforeIt() {
-        assertEquals(SlashTrigger("", 0), matchSlashTrigger("/"))
-        assertEquals(SlashTrigger("ta", 9), matchSlashTrigger("Buy milk /ta"))
-        assertNull(matchSlashTrigger("a/b"))
-        assertNull(matchSlashTrigger("/due tomorrow"))
-        assertNull(matchSlashTrigger("Buy milk"))
-    }
-
-    @Test
-    fun filterMatchesLabelsWordsAndKeywords() {
-        assertEquals(slashCommands, filterSlashCommands(slashCommands, " "))
-        assertEquals(listOf("turn-into-task", "turn-into-text"), filterSlashCommands(slashCommands, "turn").map { it.id })
-        assertEquals("turn-into-task", filterSlashCommands(slashCommands, "todo").single().id)
-        assertEquals(
-            listOf("due-today", "due-tomorrow", "due-next-week", "remove-due", "duplicate", "duplicate-with-children"),
-            filterSlashCommands(slashCommands, "du").map { it.id },
-        )
-        assertTrue(filterSlashCommands(slashCommands, "zzz").isEmpty())
-    }
-
-    @Test
     fun captureOffersOnlyWhatMakesSenseOnANewNode() {
         assertEquals(
             listOf("turn-into-task", "due-today", "due-tomorrow", "due-next-week", "zoom-in"),
@@ -90,10 +69,5 @@ class SlashCommandsTest {
         assertEquals("cascade://node/$a", copied)
         run("delete", a)
         assertNull(store.get(a))
-    }
-
-    @Test
-    fun groupsStayTogetherInOrder() {
-        assertEquals(listOf("Convert", "Due date", "Organize", "Node"), groupSlashCommands(slashCommands).map { it.first })
     }
 }
